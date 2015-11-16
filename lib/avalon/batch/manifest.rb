@@ -25,7 +25,7 @@ module Avalon
       SKIP_FIELDS = [:collection]
 
       def_delegators :@entries, :each
-      attr_reader :spreadsheet, :file, :name, :email, :entries, :package
+      attr_reader :spreadsheet, :file, :name, :email, :entries, :package, :processor
 
       class << self
         def locate(root)
@@ -59,6 +59,7 @@ module Avalon
       def initialize(file, package)
         @file = file
         @package = package
+        @processor ||= Avalon::Batch::Processors::EntryProcessor.class.to_s
         load!
       end
 
@@ -68,6 +69,7 @@ module Avalon
           @spreadsheet = Roo::Spreadsheet.open(file)
           @name = @spreadsheet.row(@spreadsheet.first_row)[0]
           @email = @spreadsheet.row(@spreadsheet.first_row)[1]
+          @processor = @spreadsheet.row(@spreadsheet.first_row)[2]
 
           header_row = @spreadsheet.row(@spreadsheet.first_row + 1)
 
@@ -167,7 +169,7 @@ module Avalon
             end
           }
 
-          entries << Entry.new(fields.select { |f| !FILE_FIELDS.include?(f) }, content, opts, index, self)
+          entries << @processor.constantize.new(fields.select { |f| !FILE_FIELDS.include?(f) }, content, opts, index, self)
         end
       end
 

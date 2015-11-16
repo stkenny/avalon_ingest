@@ -17,6 +17,7 @@ require "avalon/batch/entry"
 require "avalon/batch/ingest"
 require "avalon/batch/manifest"
 require "avalon/batch/package"
+require "avalon/batch/processors/entry_processor"
 
 module Avalon
   module Batch
