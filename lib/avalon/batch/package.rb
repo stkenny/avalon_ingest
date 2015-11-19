@@ -18,15 +18,16 @@ module Avalon
       include Enumerable
       extend Forwardable
 
-      attr_reader :dir, :manifest, :collection
+      attr_reader :dir, :manifest, :collection, :processor
       def_delegators :@manifest, :each
 
       def self.locate(root, collection)
         Avalon::Batch::Manifest.locate(root).collect { |f| self.new(f, collection) }
       end
 
-      def initialize(manifest, collection)
+      def initialize(manifest, collection, processor=Avalon::Batch::Processors::EntryProcessor)
         @dir = File.dirname(manifest)
+        @processor = processor
         @manifest = Avalon::Batch::Manifest.new(manifest, self)
         @collection = collection
       end
@@ -80,7 +81,7 @@ module Avalon
         end
         media_objects
       end
-
+    
       def errors
         Hash[@manifest.collect { |entry| [entry.row,entry.errors] }]
       end
