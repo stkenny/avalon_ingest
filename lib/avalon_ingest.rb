@@ -1,5 +1,5 @@
 require "avalon_ingest/version"
 
-module AvalonIngest
-  # Your code goes here...
+module Avalon
+  autoload :Batch, 'avalon/batch'
 end
