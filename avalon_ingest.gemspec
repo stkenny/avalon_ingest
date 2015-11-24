@@ -10,7 +10,7 @@ Gem::Specification.new do |spec|
   spec.email         = ["kennystu@gmail.com"]
 
   spec.summary       = %q{Gem of Avalon ingest functionality}
-  spec.description   = %q{Ingets functionality taken from Avalon.}
+  spec.description   = %q{Ingest functionality taken from Avalon.}
   spec.homepage      = "https://github.com/stkenny/avalon_ingest"
   spec.license       = "MIT"
 
