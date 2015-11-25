@@ -40,12 +40,12 @@ class Avalon::IngestBatch < ActiveRecord::Base
 
   def media_objects
     return [] unless self.media_object_ids
-    @media_objects ||= self.media_object_ids.map{ |id| MediaObject.find(id) }
+    @media_objects ||= self.media_object_ids.map{ |id| Avalon::MediaObject.find(id) }
   end
 
   # this is a temporary method until we can talk about adding
   # ingest_batch_id to media object
   def self.find_ingest_batch_by_media_object_id( id )
-    IngestBatch.all.find{ |ib| ib.media_object_ids.include?( id )}
+    Avalon::IngestBatch.all.find{ |ib| ib.media_object_ids.include?( id )}
   end
 end
