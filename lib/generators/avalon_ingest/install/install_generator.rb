@@ -16,6 +16,10 @@ module AvalonIngest
       def copy_migrations
         migration_template "create_table_ingest_batch.rb",
           "db/migrate/create_table_ingest_batch.rb"
+        migration_template "create_table_media_objects.rb",
+          "db/migrate/create_table_media_objects.rb"
+        migration_template "create_table_master_files.rb",
+          "db/migrate/create_table_master_files.rb" 
       end
     end
   end
