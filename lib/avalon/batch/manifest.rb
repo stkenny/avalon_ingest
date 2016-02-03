@@ -134,7 +134,8 @@ module Avalon
 
       def create_entries!
         f = @spreadsheet.first_row + 2
-        l = @spreadsheet.last_row
+        l = @spreadsheet.last_row - 1
+
         f.upto(l) do |index|
           opts = {
             :publish => false,
@@ -153,7 +154,7 @@ module Avalon
                 content << {} if f == :file
                 content.last[f] = f == :skip_transcoding ? true?(values[i]) : values[i]
               else
-                fields[f] << values[i] 
+                fields[f] << values[i]
               end
             end
           end
