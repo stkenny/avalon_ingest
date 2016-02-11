@@ -134,7 +134,7 @@ module Avalon
 
       def create_entries!
         f = @spreadsheet.first_row + 2
-        l = @spreadsheet.last_row - 1
+        l = @spreadsheet.last_row
 
         f.upto(l) do |index|
           opts = {
@@ -145,6 +145,8 @@ module Avalon
           values = @spreadsheet.row(index).collect do |val|
             (val.is_a?(Float) and (val == val.to_i)) ? val.to_i.to_s : val.to_s
           end
+          next if values.all? {|v| v.blank?}
+
           content=[]
 
           fields = Hash.new { |h,k| h[k] = [] }
