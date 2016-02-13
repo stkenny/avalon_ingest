@@ -29,7 +29,7 @@ module Avalon
 	      @row    = row
 	      @manifest = manifest
 	      @errors = ActiveModel::Errors.new(self)
-	      @files.each { |file| file[:file] = File.join(@manifest.package.dir, file[:file]) }
+	      #@files.each { |file| file[:file] = File.join(@manifest.package.dir, file[:file]) }
       end
 
       def media_object
