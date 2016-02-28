@@ -23,110 +23,109 @@ module Avalon
     	attr_reader :fields, :files, :opts, :row, :errors, :manifest, :collection
 
     	def initialize(fields, files, opts, row, manifest)
-	      @fields = fields
-	      @files  = files
-	      @opts   = opts
-	      @row    = row
-	      @manifest = manifest
-	      @errors = ActiveModel::Errors.new(self)
-	      #@files.each { |file| file[:file] = File.join(@manifest.package.dir, file[:file]) }
-      end
-
-      def media_object
-      end
-
-      def valid?
-        # Set errors if does not validate against media_object model
-        media_object.valid?
-        media_object.errors.messages.each_pair { |field,errs|
-          errs.each { |err| @errors.add(field, err) }
-        }
-        files = @files.select {|file_spec| file_valid?(file_spec)}
-        # Ensure files are listed
-        @errors.add(:content, "No files listed") if files.empty?
-        # Replace collection error if collection not found
-        if media_object.collection.nil?
-          @errors.messages[:collection] = ["Collection not found: #{@fields[:collection].first}"]
-          @errors.messages.delete(:governing_policy)
+          @fields = fields
+    	  @files  = files
+    	  @opts   = opts
+    	  @row    = row
+    	  @manifest = manifest
+    	  @errors = ActiveModel::Errors.new(self)
         end
-      end
 
-      def file_valid?(file_spec)
-        valid = true
-        # Check file offsets for valid format
-        if file_spec[:offset].present? && !Avalon::Batch::Entry.offset_valid?(file_spec[:offset])
-          @errors.add(:offset, "Invalid offset: #{file_spec[:offset]}")
-          valid = false
+        def media_object
         end
-        # Ensure listed files exist
-        if File.file?(file_spec[:file]) && self.class.derivativePaths(file_spec[:file]).present?
-          @errors.add(:content, "Both original and derivative files found")
-          valid = false
-        elsif File.file?(file_spec[:file])
-          #Do nothing.
-        else
-          if self.class.derivativePaths(file_spec[:file]).present? && file_spec[:skip_transcoding]
-            #Do nothing.
-          elsif self.class.derivativePaths(file_spec[:file]).present? && !file_spec[:skip_transcoding]
-            @errors.add(:content, "Derivative files found but skip transcoding not selected")
-            valid = false
-          else
-            @errors.add(:content, "File not found: #{file_spec[:file]}")
-            valid = false
+
+        def valid?
+          # Set errors if does not validate against media_object model
+          media_object.valid?
+          media_object.errors.messages.each_pair { |field,errs|
+            errs.each { |err| @errors.add(field, err) }
+          }
+          files = @files.select {|file_spec| file_valid?(file_spec)}
+          # Ensure files are listed
+          @errors.add(:content, "No files listed") if files.empty?
+          # Replace collection error if collection not found
+          if media_object.collection.nil?
+            @errors.messages[:collection] = ["Collection not found: #{@fields[:collection].first}"]
+            @errors.messages.delete(:governing_policy)
           end
         end
-        valid
-      end
 
-      def self.offset_valid?( offset )
-        tokens = offset.split(':')
-        return false unless (1...4).include? tokens.size
-        seconds = tokens.pop
-        return false unless /^\d{1,2}([.]\d*)?$/ =~ seconds
-        return false unless seconds.to_f < 60
-        unless tokens.empty?
-          minutes = tokens.pop
-          return false unless /^\d{1,2}$/ =~ minutes
-          return false unless minutes.to_i < 60
+        def file_valid?(file_spec)
+          valid = true
+          # Check file offsets for valid format
+          if file_spec[:offset].present? && !Avalon::Batch::Entry.offset_valid?(file_spec[:offset])
+            @errors.add(:offset, "Invalid offset: #{file_spec[:offset]}")
+            valid = false
+          end
+          # Ensure listed files exist
+          if File.file?(file_spec[:file]) && self.class.derivativePaths(file_spec[:file]).present?
+            @errors.add(:content, "Both original and derivative files found")
+            valid = false
+          elsif File.file?(file_spec[:file])
+            #Do nothing.
+          else
+            if self.class.derivativePaths(file_spec[:file]).present? && file_spec[:skip_transcoding]
+              #Do nothing.
+            elsif self.class.derivativePaths(file_spec[:file]).present? && !file_spec[:skip_transcoding]
+              @errors.add(:content, "Derivative files found but skip transcoding not selected")
+              valid = false
+            else
+              @errors.add(:content, "File not found: #{file_spec[:file]}")
+              valid = false
+            end
+          end
+          valid
+        end
+
+        def self.offset_valid?( offset )
+          tokens = offset.split(':')
+          return false unless (1...4).include? tokens.size
+          seconds = tokens.pop
+          return false unless /^\d{1,2}([.]\d*)?$/ =~ seconds
+          return false unless seconds.to_f < 60
+          unless tokens.empty?
+            minutes = tokens.pop
+            return false unless /^\d{1,2}$/ =~ minutes
+            return false unless minutes.to_i < 60
           unless tokens.empty?
             hours = tokens.pop
             return false unless /^\d{1,}$/ =~ hours
           end
+          end
+          true
         end
-        true
-      end
 
-      def self.attach_structure_to_master_file( master_file, filename )
+        def self.attach_structure_to_master_file( master_file, filename )
           structural_file = "#{filename}.structure.xml"
           if File.exists? structural_file
             master_file.structuralMetadata.content=File.open(structural_file)
           end
-      end
-
-      def process!(opts={})
-      end
-
-      def self.gatherFiles(file)
-        derivatives = {}
-        %w(low medium high).each do |quality|
-          derivative = self.derivativePath(file, quality)
-          derivatives["quality-#{quality}"] = File.new(derivative) if File.file? derivative
         end
-        derivatives.empty? ? File.new(file) : derivatives
-      end
 
-      def self.derivativePaths(filename)
-        paths = []
-        %w(low medium high).each do |quality|
-          derivative = self.derivativePath(filename, quality)
-          paths << derivative if File.file? derivative
+        def process!(opts={})
         end
-        paths
-      end
 
-      def self.derivativePath(filename, quality)
-        filename.dup.insert(filename.rindex('.'), ".#{quality}")
-      end
+        def self.gatherFiles(file)
+          derivatives = {}
+          %w(low medium high).each do |quality|
+            derivative = self.derivativePath(file, quality)
+            derivatives["quality-#{quality}"] = File.new(derivative) if File.file? derivative
+          end
+          derivatives.empty? ? File.new(file) : derivatives
+        end
+
+        def self.derivativePaths(filename)
+          paths = []
+          %w(low medium high).each do |quality|
+            derivative = self.derivativePath(filename, quality)
+            paths << derivative if File.file? derivative
+          end
+          paths
+        end
+
+        def self.derivativePath(filename, quality)
+          filename.dup.insert(filename.rindex('.'), ".#{quality}")
+        end
     end
   end
 end

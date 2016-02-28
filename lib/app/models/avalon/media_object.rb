@@ -16,4 +16,7 @@ class Avalon::MediaObject < ActiveRecord::Base
     self.parts.all?{ |master_file| master_file.succeeded? }
   end
 
+  def failed?
+    self.parts.any? { |master_file| master_file.failed? }
+  end
 end
